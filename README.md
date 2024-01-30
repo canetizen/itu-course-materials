@@ -2,4 +2,4 @@ This repository contains solutions to the projects, assignments, and exams of th
 <br>
 <a href="https://calico.readthedocs.io/en/latest/">Calico Documentation</a><br>
 <br>
-For the entirety of the course notes, you can visit my <a href="https://canetizen.pythonanywhere.com/">website</a>.
+For the entirety of the course materials, you can visit my <a href="https://canetizen.pythonanywhere.com/">website</a>.
