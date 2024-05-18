@@ -44,7 +44,7 @@ module TCounter(
     end
 endmodule
 
-module Control_Unit(
+module ControlUnit(
 	input wire[15:0] IROut,
 	input wire[7:0] T,
 	input wire Clock,
@@ -876,7 +876,7 @@ module CPUSystem(
         .Clock(Clock)
 	);
 	
-    Control_Unit _ControlUnit(
+    ControlUnit _ControlUnit(
 		.T(T),
         .Clock(Clock),
         .Reset(Reset),
@@ -899,6 +899,6 @@ module CPUSystem(
         .MuxBSel(MuxBSel),
         .ARF_OutCSel(ARF_OutCSel),
         .ARF_OutDSel(ARF_OutDSel),
-		.IROut(_ALUSystem.IR.IROut)
+	.IROut(_ALUSystem.IR.IROut)
     );
 endmodule
