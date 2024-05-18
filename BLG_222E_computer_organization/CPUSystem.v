@@ -43,83 +43,70 @@ module TCounter(
 			Output <= Output + 1'b1;
     end
 endmodule
-	 
-module CPUSystem(
-    input wire Clock,
+
+module Control_Unit(
+	input wire[15:0] IROut,
+	input wire[7:0] T,
+	input wire Clock,
 	input wire Reset,
-	input wire[7:0] T 
+    output reg[2:0] ARF_FunSel, ARF_RegSel,												
+    output reg[2:0] RF_OutASel, RF_OutBSel, RF_FunSel,
+    output reg[3:0] RF_RegSel, RF_ScrSel,
+    output reg[4:0] ALU_FunSel,
+    output reg IR_LH, IR_Write, Mem_WR, Mem_CS, ALU_WF, MuxCSel, TCounter_Reset,
+    output reg[1:0] MuxASel, MuxBSel, ARF_OutCSel, ARF_OutDSel
 );
-
-    reg[2:0] ARF_FunSel, ARF_RegSel;																
-    reg[2:0] RF_OutASel, RF_OutBSel, RF_FunSel;
-    reg[3:0] RF_RegSel, RF_ScrSel;
-    reg[4:0] ALU_FunSel;
-    reg IR_LH, IR_Write, Mem_WR, Mem_CS, ALU_WF, MuxCSel, TCounter_Reset;
-    reg[1:0] MuxASel, MuxBSel, ARF_OutCSel, ARF_OutDSel;
-
-    ArithmeticLogicUnitSystem _ALUSystem(
-        .RF_OutASel(RF_OutASel),   .RF_OutBSel(RF_OutBSel), 
-        .RF_FunSel(RF_FunSel),     .RF_RegSel(RF_RegSel),
-        .RF_ScrSel(RF_ScrSel),     .ALU_FunSel(ALU_FunSel),
-        .ALU_WF(ALU_WF),           .ARF_OutCSel(ARF_OutCSel), 
-        .ARF_OutDSel(ARF_OutDSel), .ARF_FunSel(ARF_FunSel),
-        .ARF_RegSel(ARF_RegSel),   .IR_LH(IR_LH),
-        .IR_Write(IR_Write),       .Mem_WR(Mem_WR),
-        .Mem_CS(Mem_CS),           .MuxASel(MuxASel),
-        .MuxBSel(MuxBSel),         .MuxCSel(MuxCSel),
-        .Clock(Clock)
-    );
 	
 	/*
 		The term "Indicator" determines the type of register specified in the given instruction. 
 		For example, the DREG_R1_Indicator will be logic 1 if the register specified as DREG in the given instruction is R1.
 	*/								
-	wire DREG_AR_Indicator = ~_ALUSystem.IR.IROut[8] & _ALUSystem.IR.IROut[7] & _ALUSystem.IR.IROut[6];
+	wire DREG_AR_Indicator = ~IROut[8] & IROut[7] & IROut[6];
 	
-	wire DREG_PC_Indicator = (~_ALUSystem.IR.IROut[8] & ~_ALUSystem.IR.IROut[7] & ~_ALUSystem.IR.IROut[6])
-							| (~_ALUSystem.IR.IROut[8] & ~_ALUSystem.IR.IROut[7] & _ALUSystem.IR.IROut[6]);
+	wire DREG_PC_Indicator = (~IROut[8] & ~IROut[7] & ~IROut[6])
+							| (~IROut[8] & ~IROut[7] & IROut[6]);
 							
-	wire DREG_R1_Indicator = _ALUSystem.IR.IROut[8] & ~_ALUSystem.IR.IROut[7] & ~_ALUSystem.IR.IROut[6];
-	wire DREG_R2_Indicator = _ALUSystem.IR.IROut[8] & ~_ALUSystem.IR.IROut[7] & _ALUSystem.IR.IROut[6];
-	wire DREG_R3_Indicator = _ALUSystem.IR.IROut[8] & _ALUSystem.IR.IROut[7] & ~_ALUSystem.IR.IROut[6];
+	wire DREG_R1_Indicator = IROut[8] & ~IROut[7] & ~IROut[6];
+	wire DREG_R2_Indicator = IROut[8] & ~IROut[7] & IROut[6];
+	wire DREG_R3_Indicator = IROut[8] & IROut[7] & ~IROut[6];
 	
-	wire DREG_R4_Indicator = _ALUSystem.IR.IROut[8] & _ALUSystem.IR.IROut[7] & _ALUSystem.IR.IROut[6];
-	wire DREG_RF_Indicator = _ALUSystem.IR.IROut[8]; 
-	wire DREG_SP_Indicator = ~_ALUSystem.IR.IROut[8] & _ALUSystem.IR.IROut[7] & ~_ALUSystem.IR.IROut[6];
-	wire Rx_R1_Indicator = ~_ALUSystem.IR.IROut[9] & ~_ALUSystem.IR.IROut[8];
+	wire DREG_R4_Indicator = IROut[8] & IROut[7] & IROut[6];
+	wire DREG_RF_Indicator = IROut[8]; 
+	wire DREG_SP_Indicator = ~IROut[8] & IROut[7] & ~IROut[6];
+	wire Rx_R1_Indicator = ~IROut[9] & ~IROut[8];
 	
-	wire Rx_R2_Indicator = ~_ALUSystem.IR.IROut[9] & _ALUSystem.IR.IROut[8];
-	wire Rx_R3_Indicator = _ALUSystem.IR.IROut[9] & ~_ALUSystem.IR.IROut[8];
+	wire Rx_R2_Indicator = ~IROut[9] & IROut[8];
+	wire Rx_R3_Indicator = IROut[9] & ~IROut[8];
 	
-	wire Rx_R4_Indicator = _ALUSystem.IR.IROut[9] & _ALUSystem.IR.IROut[8];
-	wire SREG1_AR_Indicator = ~_ALUSystem.IR.IROut[5] & _ALUSystem.IR.IROut[4] & _ALUSystem.IR.IROut[3];
+	wire Rx_R4_Indicator = IROut[9] & IROut[8];
+	wire SREG1_AR_Indicator = ~IROut[5] & IROut[4] & IROut[3];
 	
-	wire SREG1_PC_Indicator = (~_ALUSystem.IR.IROut[5] & ~_ALUSystem.IR.IROut[4] & ~_ALUSystem.IR.IROut[3])
-							| (~_ALUSystem.IR.IROut[5] & ~_ALUSystem.IR.IROut[4] & _ALUSystem.IR.IROut[3]);
+	wire SREG1_PC_Indicator = (~IROut[5] & ~IROut[4] & ~IROut[3])
+							| (~IROut[5] & ~IROut[4] & IROut[3]);
 							
-	wire SREG1_R1_Indicator = _ALUSystem.IR.IROut[5] & ~_ALUSystem.IR.IROut[4] & ~_ALUSystem.IR.IROut[3];
-	wire SREG1_R2_Indicator = _ALUSystem.IR.IROut[5] & ~_ALUSystem.IR.IROut[4] & _ALUSystem.IR.IROut[3];
-	wire SREG1_R3_Indicator = _ALUSystem.IR.IROut[5] & _ALUSystem.IR.IROut[4] & ~_ALUSystem.IR.IROut[3];
+	wire SREG1_R1_Indicator = IROut[5] & ~IROut[4] & ~IROut[3];
+	wire SREG1_R2_Indicator = IROut[5] & ~IROut[4] & IROut[3];
+	wire SREG1_R3_Indicator = IROut[5] & IROut[4] & ~IROut[3];
 	
-	wire SREG1_R4_Indicator = _ALUSystem.IR.IROut[5] & _ALUSystem.IR.IROut[4] & _ALUSystem.IR.IROut[3];
-	wire SREG1_RF_Indicator = _ALUSystem.IR.IROut[5];
+	wire SREG1_R4_Indicator = IROut[5] & IROut[4] & IROut[3];
+	wire SREG1_RF_Indicator = IROut[5];
 	
-	wire SREG1_SP_Indicator = ~_ALUSystem.IR.IROut[5] & _ALUSystem.IR.IROut[4] & ~_ALUSystem.IR.IROut[3];
-	wire SREG2_AR_Indicator = ~_ALUSystem.IR.IROut[2] & _ALUSystem.IR.IROut[1] & _ALUSystem.IR.IROut[0];
+	wire SREG1_SP_Indicator = ~IROut[5] & IROut[4] & ~IROut[3];
+	wire SREG2_AR_Indicator = ~IROut[2] & IROut[1] & IROut[0];
 	
-	wire SREG2_PC_Indicator = (~_ALUSystem.IR.IROut[2] & ~_ALUSystem.IR.IROut[1] & ~_ALUSystem.IR.IROut[0])
-							| (~_ALUSystem.IR.IROut[2] & ~_ALUSystem.IR.IROut[1] & _ALUSystem.IR.IROut[0]);
+	wire SREG2_PC_Indicator = (~IROut[2] & ~IROut[1] & ~IROut[0])
+							| (~IROut[2] & ~IROut[1] & IROut[0]);
 							
-	wire SREG2_R1_Indicator = _ALUSystem.IR.IROut[2] & ~_ALUSystem.IR.IROut[1] & ~_ALUSystem.IR.IROut[0];
-	wire SREG2_R2_Indicator = _ALUSystem.IR.IROut[2] & ~_ALUSystem.IR.IROut[1] & _ALUSystem.IR.IROut[0];
-	wire SREG2_R3_Indicator = _ALUSystem.IR.IROut[2] & _ALUSystem.IR.IROut[1] & ~_ALUSystem.IR.IROut[0];
+	wire SREG2_R1_Indicator = IROut[2] & ~IROut[1] & ~IROut[0];
+	wire SREG2_R2_Indicator = IROut[2] & ~IROut[1] & IROut[0];
+	wire SREG2_R3_Indicator = IROut[2] & IROut[1] & ~IROut[0];
 	
-	wire SREG2_R4_Indicator = _ALUSystem.IR.IROut[2] & _ALUSystem.IR.IROut[1] & _ALUSystem.IR.IROut[0];
-	wire SREG2_RF_Indicator = _ALUSystem.IR.IROut[2];
+	wire SREG2_R4_Indicator = IROut[2] & IROut[1] & IROut[0];
+	wire SREG2_RF_Indicator = IROut[2];
 	
-	wire SREG2_SP_Indicator = ~_ALUSystem.IR.IROut[2] & _ALUSystem.IR.IROut[1] & ~_ALUSystem.IR.IROut[0];
+	wire SREG2_SP_Indicator = ~IROut[2] & IROut[1] & ~IROut[0];
 	
-	wire WF_Change_Indicator = _ALUSystem.IR.IROut[9];
+	wire WF_Change_Indicator = IROut[9];
 	wire Zero_Flag_Indicator = _ALUSystem.ALU.FlagsOut[3];			
 		
 	wire[2:0] TCounter_Output;
@@ -128,7 +115,7 @@ module CPUSystem(
 	
 	TCounter SC(.Clock(Clock), .Reset(TCounter_Reset), .Output(TCounter_Output));
 	TDecoder SD(.Input(TCounter_Output), .Output(T));
-	DDecoder OD(.Input(_ALUSystem.IR.IROut[15:10]), .Output(D));
+	DDecoder OD(.Input(IROut[15:10]), .Output(D));
 	
 	/*
 		Computer initialization conditions: 
@@ -862,4 +849,56 @@ module CPUSystem(
 			IR_LH <= 1'b1; // Memory Output(15:8) will be loaded to IR.
 		// #############################################
 	end
+endmodule
+	 
+module CPUSystem(
+    input wire Clock,
+	input wire Reset,
+	input wire[7:0] T 
+);
+    wire[2:0] ARF_FunSel, ARF_RegSel;																
+    wire[2:0] RF_OutASel, RF_OutBSel, RF_FunSel;
+    wire[3:0] RF_RegSel, RF_ScrSel;
+    wire[4:0] ALU_FunSel;
+    wire IR_LH, IR_Write, Mem_WR, Mem_CS, ALU_WF, MuxCSel, TCounter_Reset;
+    wire[1:0] MuxASel, MuxBSel, ARF_OutCSel, ARF_OutDSel;
+	
+    ArithmeticLogicUnitSystem _ALUSystem(
+        .RF_OutASel(RF_OutASel),   .RF_OutBSel(RF_OutBSel), 
+        .RF_FunSel(RF_FunSel),     .RF_RegSel(RF_RegSel),
+        .RF_ScrSel(RF_ScrSel),     .ALU_FunSel(ALU_FunSel),
+        .ALU_WF(ALU_WF),           .ARF_OutCSel(ARF_OutCSel), 
+        .ARF_OutDSel(ARF_OutDSel), .ARF_FunSel(ARF_FunSel),
+        .ARF_RegSel(ARF_RegSel),   .IR_LH(IR_LH),
+        .IR_Write(IR_Write),       .Mem_WR(Mem_WR),
+        .Mem_CS(Mem_CS),           .MuxASel(MuxASel),
+        .MuxBSel(MuxBSel),         .MuxCSel(MuxCSel),
+        .Clock(Clock)
+	);
+	
+    Control_Unit _ControlUnit(
+		.T(T),
+        .Clock(Clock),
+        .Reset(Reset),
+        .ARF_FunSel(ARF_FunSel),
+        .ARF_RegSel(ARF_RegSel),
+        .RF_OutASel(RF_OutASel),
+        .RF_OutBSel(RF_OutBSel),
+        .RF_FunSel(RF_FunSel),
+        .RF_RegSel(RF_RegSel),
+        .RF_ScrSel(RF_ScrSel),
+        .ALU_FunSel(ALU_FunSel),
+        .IR_LH(IR_LH),
+        .IR_Write(IR_Write),
+        .Mem_WR(Mem_WR),
+        .Mem_CS(Mem_CS),
+        .ALU_WF(ALU_WF),
+        .MuxCSel(MuxCSel),
+        .TCounter_Reset(TCounter_Reset),
+        .MuxASel(MuxASel),
+        .MuxBSel(MuxBSel),
+        .ARF_OutCSel(ARF_OutCSel),
+        .ARF_OutDSel(ARF_OutDSel),
+		.IROut(_ALUSystem.IR.IROut)
+    );
 endmodule
